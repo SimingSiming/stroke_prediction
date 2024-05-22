@@ -28,8 +28,8 @@ preprocessor = ColumnTransformer(
     ])
 
 # Split
-X = train_data.drop(columns=['id', 'stroke', 'heart_disease'])  # Drop unnecessary columns
-y = train_data['heart_disease']  # Set target variable
+X = df.drop(columns=['id', 'stroke', 'heart_disease'])  # Drop unnecessary columns
+y = df['heart_disease']  # Set target variable
 
 X_transformed = preprocessor.fit_transform(X)
 
