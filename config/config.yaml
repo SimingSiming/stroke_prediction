@@ -7,6 +7,9 @@ run_config:
   output: "runs"
 
 preprocess_data:
+  input_file: 'train_data.csv'
+  output_file: 'cleaned_train_data.csv'
+
   numeric_features:
     - 'age'
     - 'avg_glucose_level'
@@ -46,5 +49,6 @@ evaluate_performance:
 
 aws:
   upload: True
-  bucket_name: alx7243-test-1
+  profile_name: mlds_ce
+  bucket_name: cloud-engineer-bucket
   region_name: us-east-2

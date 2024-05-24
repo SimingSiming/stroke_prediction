@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging.config
 from pathlib import Path
+import pdb
 
 import yaml
 
@@ -15,14 +16,14 @@ import src.preprocess as pp
 # import src.train_model as tm
 
 logging.config.fileConfig("config/logging/local.conf")
-logger = logging.getLogger("clouds")
+logger = logging.getLogger("heart_stroke")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Acquire, clean, and create features from clouds data"
     )
     parser.add_argument(
-        "--config", default="config/default-config.yaml", help="Path to configuration file"
+        "--config", default="config/config.yaml", help="Path to configuration file"
     )
     args = parser.parse_args()
 
@@ -37,6 +38,7 @@ if __name__ == "__main__":
 
     run_config = config.get("run_config", {})
 
+
     # Set up output directory for saving artifacts
     now = int(datetime.datetime.now().timestamp())
     artifacts = Path(run_config.get("output", "runs")) / str(now)
@@ -46,17 +48,33 @@ if __name__ == "__main__":
     with (artifacts / "config.yaml").open("w") as f:
         yaml.dump(config, f)
 
-    # Acquire data from online repository and save to disk
-    ad.acquire_data(run_config["data_source"], artifacts / "clouds.data")
 
-    # Create structured dataset from raw data; save to disk
-    data = cd.create_dataset(artifacts / "clouds.data", config["create_dataset"])
-    cd.save_dataset(data, artifacts / "clouds.csv")
-    logger.info("Successfully save the dataset to %s", artifacts)
+    config = pp.load_config(args.config)
 
-    # Enrich dataset with features for model training; save to disk
-    features = gf.generate_features(data, config["generate_features"])
-    features.to_csv(artifacts / "features.csv", index = False)
+    numeric_features = config['preprocess_data']['numeric_features']
+    cat_features = config['preprocess_data']['cat_features']
+    drop_features = config['preprocess_data']['drop_features']
+    target_feature = config['preprocess_data']['target']
+
+    aws_config = config['aws']
+    bucket_name = aws_config['bucket_name']
+    region_name = aws_config['region_name']
+    upload_to_s3 = aws_config['upload']
+    profile_name = aws_config.get('profile_name', 'default')
+
+    input_file_key = 'train_data.csv'
+    output_file_key = 'cleaned_train_data.csv'
+
+    df = pp.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
+    cleaned_train = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
+    
+    if upload_to_s3:
+        pp.save_data_to_s3(cleaned_train, bucket_name, output_file_key, region_name, profile_name)
+        logger.info(f"File sucessfully uploaded to S3!! {output_file_key}")
+    else:
+        cleaned_train.to_csv(output_file_key, index=False)
+
+    pdb.set_trace()
 
     # Generate statistics and visualizations for summarizing the data; save to disk
     figures = artifacts / "figures"
