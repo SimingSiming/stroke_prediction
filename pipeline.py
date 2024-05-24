@@ -55,15 +55,14 @@ if __name__ == "__main__":
     cat_features = config['preprocess_data']['cat_features']
     drop_features = config['preprocess_data']['drop_features']
     target_feature = config['preprocess_data']['target']
+    input_file_key = config['preprocess_data']['input_file']
+    output_file_key = config['preprocess_data']['output_file']
 
     aws_config = config['aws']
     bucket_name = aws_config['bucket_name']
     region_name = aws_config['region_name']
     upload_to_s3 = aws_config['upload']
     profile_name = aws_config.get('profile_name', 'default')
-
-    input_file_key = 'train_data.csv'
-    output_file_key = 'cleaned_train_data.csv'
 
     df = pp.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
     cleaned_train = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
