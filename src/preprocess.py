@@ -7,14 +7,6 @@ import yaml
 import boto3
 from io import StringIO
 
-def load_data_from_s3(bucket_name, file_key, region_name, profile_name):
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
-    s3_client = session.client('s3')
-    csv_obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    body = csv_obj['Body'].read().decode('utf-8')
-    df = pd.read_csv(StringIO(body))
-    return df
-
 def preprocess_data(df, numeric_features, cat_features, drop_features, target_feature):
     # Define transformers
     numerical_transformer = Pipeline(steps=[
@@ -47,13 +39,6 @@ def preprocess_data(df, numeric_features, cat_features, drop_features, target_fe
     cleaned_train = pd.concat([X_transformed_df, y.reset_index(drop=True)], axis=1)
 
     return cleaned_train
-
-def save_data_to_s3(df, bucket_name, file_key, region_name, profile_name):
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=False)
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
-    s3_client = session.client('s3')
-    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
 
 def load_config(config_path):
     with open(config_path, 'r') as file:

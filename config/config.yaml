@@ -22,18 +22,14 @@ preprocess_data:
     - 'smoking_status'
   drop_features:
     - 'id'
-    - 'stroke'
-  target: 'heart_disease'
-
+    - 'heart_disease'
+  target: 'stroke'
 
 train_model:
+  random_state: 1911
   test_size: 0.3
   n_estimators: 10
   max_depth: 10
-  features_to_fit:
-    - 'log_entropy'
-    - 'IR_norm_range'
-    - 'entropy_x_contrast'
 
 score_model:
   initial_features:

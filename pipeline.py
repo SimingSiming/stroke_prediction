@@ -7,6 +7,7 @@ import pdb
 import yaml
 
 import src.preprocess as pp
+import src.aws_utils as aws
 # import src.analysis as eda
 # import src.aws_utils as aws
 # import src.create_dataset as cd
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     with (artifacts / "config.yaml").open("w") as f:
         yaml.dump(config, f)
 
-
+    #PreProcess the Data    
     config = pp.load_config(args.config)
 
     numeric_features = config['preprocess_data']['numeric_features']
@@ -64,16 +65,41 @@ if __name__ == "__main__":
     upload_to_s3 = aws_config['upload']
     profile_name = aws_config.get('profile_name', 'default')
 
-    df = pp.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
+    df = aws.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
     cleaned_train = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
     
     if upload_to_s3:
-        pp.save_data_to_s3(cleaned_train, bucket_name, output_file_key, region_name, profile_name)
+        aws.save_data_to_s3(cleaned_train, bucket_name, output_file_key, region_name, profile_name)
         logger.info(f"File sucessfully uploaded to S3!! {output_file_key}")
     else:
         cleaned_train.to_csv(output_file_key, index=False)
 
+    # Train the Model
+    train_config = config['train_model']
+    aws_config = config['aws']
+    data_path = config['preprocess_data']['output_file']
+    target_feature = config['preprocess_data']['target']
+    
+    # Load data from S3
+    df = aws.load_data_from_s3(aws_config['bucket_name'], data_path, aws_config['region_name'], aws_config.get('profile_name', 'default'))
+    
+    # Split data
+    X_train, X_test, y_train, y_test = split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
+    
+    # Train model
+    model = train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
+    
+    # Save model locally
+    model_filename = 'random_forest_model.joblib'
+    save_model(model, model_filename)
+    
+    # Upload model to S3
+    aws.upload_file_to_s3(model_filename, aws_config['bucket_name'], 'models/random_forest_model.joblib', aws_config['region_name'],
+                          aws_config.get('profile_name', 'default'))
+
     pdb.set_trace()
+
+    
 
     # Generate statistics and visualizations for summarizing the data; save to disk
     figures = artifacts / "figures"
