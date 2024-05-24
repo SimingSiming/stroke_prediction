@@ -8,6 +8,7 @@ import yaml
 
 import src.preprocess as pp
 import src.aws_utils as aws
+import src.train as t
 # import src.analysis as eda
 # import src.aws_utils as aws
 # import src.create_dataset as cd
@@ -82,16 +83,17 @@ if __name__ == "__main__":
     
     # Load data from S3
     df = aws.load_data_from_s3(aws_config['bucket_name'], data_path, aws_config['region_name'], aws_config.get('profile_name', 'default'))
-    
+
     # Split data
-    X_train, X_test, y_train, y_test = split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
+    X_train, X_test, y_train, y_test = t.split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
     
     # Train model
-    model = train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
+    model = t.train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
     
     # Save model locally
-    model_filename = 'random_forest_model.joblib'
-    save_model(model, model_filename)
+    model_filename = config['train_model']['output_model']
+    t.save_model(model, model_filename)
+    logger.info("Successfully upload model to aws!")
     
     # Upload model to S3
     aws.upload_file_to_s3(model_filename, aws_config['bucket_name'], 'models/random_forest_model.joblib', aws_config['region_name'],

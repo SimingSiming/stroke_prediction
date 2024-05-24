@@ -1,5 +1,7 @@
 import boto3
 import logging
+import pandas as pd
+from io import StringIO
 
 logger = logging.getLogger("heart_stroke")
 

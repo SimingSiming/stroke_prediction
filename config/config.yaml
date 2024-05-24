@@ -30,6 +30,7 @@ train_model:
   test_size: 0.3
   n_estimators: 10
   max_depth: 10
+  output_model: 'model/random_forest_model.joblib'
 
 score_model:
   initial_features:
