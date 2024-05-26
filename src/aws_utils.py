@@ -1,19 +1,25 @@
 import boto3
+import os
+import pickle
 import logging
 import pandas as pd
 from io import StringIO
 
 logger = logging.getLogger("heart_stroke")
 
-def upload_file_to_s3(local_path, bucket, s3_path, region_name, profile_name='default'):
-    try:
-        session = boto3.Session(profile_name=profile_name, region_name=region_name)
-        s3_client = session.client('s3')
-        s3_client.upload_file(local_path, bucket, s3_path)
-        logger.info(f"File successfully uploaded to S3 at {s3_path}")
-    except Exception as e:
-        logger.error(f"Error uploading file to S3: {e}")
-        raise
+def save_and_upload_model(model, output_path, bucket_name, s3_path, model_filename):
+    # Ensure the output directory exists
+    os.makedirs(output_path, exist_ok=True)
+    
+    # Save the model to a .pkl file
+    model_file = os.path.join(output_path, model_filename)
+    with open(model_file, 'wb') as f:
+        pickle.dump(model, f)
+    
+    # Upload the model to S3
+    s3 = boto3.client('s3')
+    s3.upload_file(model_file, bucket_name, os.path.join(s3_path, model_filename))
+    print(f"Model uploaded to s3://{bucket_name}/{os.path.join(s3_path, model_filename)}")
     
 def load_data_from_s3(bucket_name, file_key, region_name, profile_name):
     session = boto3.Session(profile_name=profile_name, region_name=region_name)

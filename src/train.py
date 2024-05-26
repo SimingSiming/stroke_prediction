@@ -2,8 +2,15 @@ import pandas as pd
 import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from imblearn.over_sampling import SMOTE
 import yaml
+import boto3
+from io import StringIO
 
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
 
 def split_data(df, target, test_size, random_state):
     X = df.drop(columns=[target])

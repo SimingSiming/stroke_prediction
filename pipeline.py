@@ -2,20 +2,12 @@ import argparse
 import datetime
 import logging.config
 from pathlib import Path
-import pdb
-
 import yaml
-
+import pdb
 import src.preprocess as pp
-import src.aws_utils as aws
 import src.train as t
-# import src.analysis as eda
-# import src.aws_utils as aws
-# import src.create_dataset as cd
-# import src.evaluate_performance as ep
-# import src.generate_features as gf
-# import src.score_model as sm
-# import src.train_model as tm
+import src.score as s
+import src.aws_utils as aws
 
 logging.config.fileConfig("config/logging/local.conf")
 logger = logging.getLogger("heart_stroke")
@@ -33,13 +25,12 @@ if __name__ == "__main__":
     with open(args.config, "r") as f:
         try:
             config = yaml.load(f, Loader=yaml.FullLoader)
-        except yaml.error.YAMLError as e:
+        except yaml.YAMLError as e:
             logger.error("Error while loading configuration from %s", args.config)
         else:
             logger.info("Configuration file loaded from %s", args.config)
 
     run_config = config.get("run_config", {})
-
 
     # Set up output directory for saving artifacts
     now = int(datetime.datetime.now().timestamp())
@@ -50,9 +41,7 @@ if __name__ == "__main__":
     with (artifacts / "config.yaml").open("w") as f:
         yaml.dump(config, f)
 
-    #PreProcess the Data    
-    config = pp.load_config(args.config)
-
+    # Preprocess the Data
     numeric_features = config['preprocess_data']['numeric_features']
     cat_features = config['preprocess_data']['cat_features']
     drop_features = config['preprocess_data']['drop_features']
@@ -67,39 +56,46 @@ if __name__ == "__main__":
     profile_name = aws_config.get('profile_name', 'default')
 
     df = aws.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
-    cleaned_train = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
-    
+    cleaned_data = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
+
     if upload_to_s3:
-        aws.save_data_to_s3(cleaned_train, bucket_name, output_file_key, region_name, profile_name)
-        logger.info(f"File sucessfully uploaded to S3!! {output_file_key}")
+        aws.save_data_to_s3(cleaned_data, bucket_name, output_file_key, region_name, profile_name)
+        logger.info(f"File successfully uploaded to S3!! {output_file_key}")
     else:
-        cleaned_train.to_csv(output_file_key, index=False)
+        cleaned_data.to_csv(output_file_key, index=False)
 
     # Train the Model
     train_config = config['train_model']
-    aws_config = config['aws']
     data_path = config['preprocess_data']['output_file']
-    target_feature = config['preprocess_data']['target']
-    
-    # Load data from S3
-    df = aws.load_data_from_s3(aws_config['bucket_name'], data_path, aws_config['region_name'], aws_config.get('profile_name', 'default'))
 
-    # Split data
+    df = aws.load_data_from_s3(bucket_name, data_path, region_name, profile_name)
+
     X_train, X_test, y_train, y_test = t.split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
-    
-    # Train model
     model = t.train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
-    
-    # Save model locally
-    model_filename = config['train_model']['output_model']
-    t.save_model(model, model_filename)
-    logger.info("Successfully upload model to aws!")
-    
-    # Upload model to S3
-    aws.upload_file_to_s3(model_filename, aws_config['bucket_name'], 'models/random_forest_model.joblib', aws_config['region_name'],
-                          aws_config.get('profile_name', 'default'))
 
+    model_filename = config['train_model']['output_model']
+    
+    # Save and upload the model
+    aws.save_and_upload_model(
+        model,
+        train_config['output_model'],
+        aws_config['bucket_name'],
+        train_config['output_model'],
+        train_config['model_filename']
+    )
+    
     pdb.set_trace()
+
+
+
+    # Score the Model
+    score_config = config['score_model']
+    test_data_path = config['preprocess_data']['output_file']
+    model_path = config['train_model']['output_model']
+    output_path = score_config['output_metrics']
+
+    s.score_model(test_data_path, model_path, output_path, target_feature)
+    logger.info("Successfully evaluated the model and saved metrics to S3!")
 
     
 

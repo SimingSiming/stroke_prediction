@@ -3,6 +3,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
 import yaml
 import boto3
 from io import StringIO
@@ -32,16 +33,19 @@ def preprocess_data(df, numeric_features, cat_features, drop_features, target_fe
     # Apply transformations
     X_transformed = preprocessor.fit_transform(X)
 
+    # Apply SMOTE
+    smote = SMOTE(random_state=42)
+    X_resampled, y_resampled = smote.fit_resample(X_transformed, y)
+
     # Convert the transformed features back to a DataFrame
-    X_transformed_df = pd.DataFrame(X_transformed, columns=preprocessor.get_feature_names_out())
+    X_resampled_df = pd.DataFrame(X_resampled, columns=preprocessor.get_feature_names_out())
 
     # Combine the transformed features and the target variable
-    cleaned_train = pd.concat([X_transformed_df, y.reset_index(drop=True)], axis=1)
+    cleaned_data = pd.concat([X_resampled_df, y_resampled.reset_index(drop=True)], axis=1)
 
-    return cleaned_train
+    return cleaned_data
 
 def load_config(config_path):
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
     return config
-

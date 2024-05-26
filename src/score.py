@@ -3,13 +3,19 @@ import joblib
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import boto3
 
-def score_model(test_data_path, model_path, output_path):
+def load_config(config_path):
+    import yaml
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
+
+def score_model(test_data_path, model_path, output_path, target_feature):
     # Load preprocessed test data
     df = pd.read_csv(test_data_path)
 
     # Split data into features and target variable
-    X_test = df.drop(columns=['heart_disease'])
-    y_test = df['heart_disease']
+    X_test = df.drop(columns=[target_feature])
+    y_test = df[target_feature]
 
     # Load the trained model
     model = joblib.load(model_path)
@@ -46,4 +52,3 @@ def score_model(test_data_path, model_path, output_path):
     # Upload the metrics to S3
     s3 = boto3.client('s3')
     s3.upload_file(metrics_filename, output_path.split('/')[2], '/'.join(output_path.split('/')[3:]))
-
