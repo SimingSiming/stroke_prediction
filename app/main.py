@@ -17,7 +17,7 @@ def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
     return model
 
 # Load the model
-model = load_model_from_s3('cloud-engineer-bucket', 'models/random_forest_model.joblib')
+model = load_model_from_s3('cloud-engineer-bucket', 'models/random_forest_model.pkl')
 
 class PatientInfo(BaseModel):
     id: int

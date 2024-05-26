@@ -3,7 +3,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-import yaml
 from io import StringIO
 
 def preprocess_data(df, numeric_features, cat_features, drop_features):
