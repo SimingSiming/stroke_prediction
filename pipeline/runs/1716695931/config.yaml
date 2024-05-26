@@ -1,0 +1,44 @@
+aws:
+  bucket_name: cloud-engineer-bucket
+  profile_name: mlds_ce
+  region_name: us-east-2
+  upload: true
+evaluate_performance:
+  metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+preprocess_data:
+  cat_features:
+  - gender
+  - ever_married
+  - work_type
+  - Residence_type
+  - smoking_status
+  drop_features:
+  - id
+  - heart_disease
+  input_file: data/train_data.csv
+  numeric_features:
+  - age
+  - avg_glucose_level
+  - bmi
+  output_file: data/cleaned_train_data.csv
+  target: stroke
+  test_file: data/test_data.csv
+run_config:
+  author: MLDS Team
+  data_source: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+  dependencies: requirements.txt
+  description: Predict heart stroke risks
+  output: runs
+  version: 0.0.1
+train_model:
+  max_depth: 10
+  model_filename: random_forest_model.pkl
+  n_estimators: 10
+  output_model: models/
+  random_state: 1911
+  test_size: 0.3
