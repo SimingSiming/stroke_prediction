@@ -37,7 +37,7 @@ def save_data_to_s3(df, bucket_name, file_key, region_name, profile_name):
     s3_client = session.client('s3')
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
 
-def load_model_from_s3(bucket_name, model_key, region_name='us-east-1', profile_name=None):
+def load_model_from_s3(bucket_name, model_key, region_name='us-east-2', profile_name=None):
     print(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")
     
     if profile_name:

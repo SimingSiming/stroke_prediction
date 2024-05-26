@@ -77,3 +77,8 @@
 2024-05-25 21:45:37 - heart_stroke - INFO - Configuration file loaded from config/config.yaml (pipeline.py:32)
 2024-05-25 21:45:39 - heart_stroke - INFO - File successfully uploaded to S3!! data/cleaned_train_data.csv (pipeline.py:64)
 2024-05-25 21:45:42 - heart_stroke - INFO - Artifacts successfully uploaded to S3!! (pipeline.py:116)
+2024-05-25 22:55:44 - heart_stroke - INFO - Configuration file loaded from config/config.yaml (pipeline.py:32)
+2024-05-25 22:55:46 - heart_stroke - INFO - File successfully uploaded to S3!! data/cleaned_train_data.csv (pipeline.py:64)
+2024-05-25 22:58:51 - heart_stroke - INFO - Configuration file loaded from config/config.yaml (pipeline.py:32)
+2024-05-25 22:58:53 - heart_stroke - INFO - File successfully uploaded to S3!! data/cleaned_train_data.csv (pipeline.py:64)
+2024-05-25 22:58:55 - heart_stroke - INFO - Artifacts successfully uploaded to S3!! (pipeline.py:116)
