@@ -3,7 +3,7 @@ import os
 import pickle
 import logging
 import pandas as pd
-from io import StringIO
+from io import StringIO, BytesIO
 
 logger = logging.getLogger("heart_stroke")
 
@@ -36,3 +36,51 @@ def save_data_to_s3(df, bucket_name, file_key, region_name, profile_name):
     session = boto3.Session(profile_name=profile_name, region_name=region_name)
     s3_client = session.client('s3')
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
+
+def load_model_from_s3(bucket_name, model_key, region_name='us-east-1', profile_name=None):
+    print(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")
+    
+    if profile_name:
+        session = boto3.Session(profile_name=profile_name, region_name=region_name)
+    else:
+        session = boto3.Session(region_name=region_name)
+
+    s3 = session.client('s3')
+    
+    try:
+        with open('temp_model.pkl', 'wb') as data:
+            s3.download_fileobj(bucket_name, model_key, data)
+        with open('temp_model.pkl', 'rb') as data:
+            model = pickle.load(data)
+        return model
+    except Exception as e:
+        print(f"Error loading model from S3: {e}")
+        raise e
+
+def upload_artifacts_to_s3(directory, bucket_name, s3_prefix, region_name, profile_name):
+    """
+    Upload all files in a directory to an S3 bucket.
+    :param directory: Path to the local directory containing the artifacts
+    :param bucket_name: S3 bucket name
+    :param s3_prefix: S3 prefix (directory) to upload the artifacts to
+    :param region_name: AWS region name
+    :param profile_name: AWS profile name
+    """
+    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+    s3 = session.client('s3')
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            local_path = os.path.join(root, file)
+            relative_path = os.path.relpath(local_path, directory)
+            s3_path = os.path.join(s3_prefix, relative_path)
+            s3.upload_file(local_path, bucket_name, s3_path)
+            print(f"Uploaded {local_path} to s3://{bucket_name}/{s3_path}")
+
+
+
+
+
+
+
+
+    

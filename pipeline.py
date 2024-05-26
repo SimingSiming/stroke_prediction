@@ -6,8 +6,9 @@ import yaml
 import pdb
 import src.preprocess as pp
 import src.train as t
-import src.score as s
 import src.aws_utils as aws
+import src.evaluate as e 
+import json
 
 logging.config.fileConfig("config/logging/local.conf")
 logger = logging.getLogger("heart_stroke")
@@ -73,67 +74,51 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = t.split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
     model = t.train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
 
-    model_filename = config['train_model']['output_model']
-    
+    # Model Configuration
+    model_output_path = train_config['output_model']
+    model_filename = train_config['model_filename']
+    s3_path = model_output_path  
+
     # Save and upload the model
     aws.save_and_upload_model(
         model,
-        train_config['output_model'],
+        model_output_path,
         aws_config['bucket_name'],
-        train_config['output_model'],
-        train_config['model_filename']
+        s3_path,
+        model_filename
     )
+
+    model_key = f"{model_output_path}{model_filename}"
+    # Load the model from S3
+    model = aws.load_model_from_s3(bucket_name, model_key, region_name, profile_name)
+    # Now you can use the loaded model for prediction or further processing
+    print("Model loaded successfully!")
+
+    # Evaluate the Model
+    evaluate_config = config['evaluate_performance']['metrics']
+    y_pred, y_proba = e.predict_model(model, X_test)
+    metrics = e.evaluate_performance(y_test, y_pred, y_proba, evaluate_config)
+
+    # Save metrics to JSON with indentation for readability
+    metrics_path = artifacts / "metrics.json"
+    with metrics_path.open("w") as f:
+        json.dump(metrics, f, indent=4)
     
-    pdb.set_trace()
+    # Plot and save AUC-ROC curve
+    roc_auc_path = artifacts / "roc_auc_curve.png"
+    e.plot_roc_auc(y_test, y_proba, roc_auc_path)
+
+    print(f"Metrics and ROC-AUC curve saved in {artifacts}")
+
+    # Optionally upload artifacts to S3
+    if upload_to_s3:
+        aws.upload_artifacts_to_s3(artifacts, bucket_name, f"runs/{now}", region_name, profile_name)
+        logger.info(f"Artifacts successfully uploaded to S3!!")
 
 
 
-    # Score the Model
-    score_config = config['score_model']
-    test_data_path = config['preprocess_data']['output_file']
-    model_path = config['train_model']['output_model']
-    output_path = score_config['output_metrics']
 
-    s.score_model(test_data_path, model_path, output_path, target_feature)
-    logger.info("Successfully evaluated the model and saved metrics to S3!")
 
-    
 
-    # Generate statistics and visualizations for summarizing the data; save to disk
-    figures = artifacts / "figures"
-    figures.mkdir()
-    eda.save_figures(features, figures, data["class"])
-    logger.info("Successfuly generate figures for all features!")
 
-    # Split data into train/test set and train model based on config; save each to disk
-    tmo, train, test = tm.train_model(features, data["class"], config["train_model"])
-    tm.save_data(train, test, artifacts)
-    logger.info("Successfully saved Both Train Data and Test Data!")
-    tm.save_model(tmo, artifacts / "trained_model_object.pkl")
-    logger.info("Successfully saved the trained model!")
-    # Score model on test set; save scores to disk
-    scores = sm.score_model(test, tmo, config["score_model"])
-    sm.save_scores(scores, artifacts / "scores.csv")
-    logger.info("Successfully saved the scores into scores.csv")
 
-    # Evaluate model performance metrics; save metrics to disk
-    try:
-        metrics = ep.evaluate_performance(scores, config["evaluate_performance"])
-        ep.save_metrics(metrics, artifacts / "metrics.yaml")
-        logger.info("Successfully evaluated performance and saved metrics.")
-    except ValueError as ve:
-        logger.warning("ValueError occurred during performance evaluation: %s", ve)
-    except FileNotFoundError as fnf:
-        logger.warning("File not found during saving metrics: %s", fnf)
-    except IOError as ioe:
-        logger.warning("IOError occurred while saving metrics to disk: %s", ioe)
-    except yaml.YAMLError as yml:
-        logger.warning("YAML related error when saving metrics: %s", yml)
-    except Exception as e:
-        logger.error("An unexpected error occurred during evaluation or saving metrics: %s", e)
-        raise
-
-    # Upload all artifacts to S3
-    aws_config = config.get("aws")
-    if aws_config.get("upload", False):
-        aws.upload_artifacts(artifacts, aws_config)

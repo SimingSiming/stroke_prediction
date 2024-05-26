@@ -4,10 +4,12 @@ aws:
   region_name: us-east-2
   upload: true
 evaluate_performance:
-- AUC
-- Accuracy
-- Confusion Matrix
-- Classification Report
+  metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
 preprocess_data:
   cat_features:
   - gender
@@ -25,6 +27,7 @@ preprocess_data:
   - bmi
   output_file: data/cleaned_train_data.csv
   target: stroke
+  test_file: data/test_data.csv
 run_config:
   author: MLDS Team
   data_source: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
@@ -32,11 +35,6 @@ run_config:
   description: Predict heart stroke risks
   output: runs
   version: 0.0.1
-score_model:
-  initial_features:
-  - log_entropy
-  - IR_norm_range
-  - entropy_x_contrast
 train_model:
   max_depth: 10
   model_filename: random_forest_model.pkl

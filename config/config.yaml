@@ -9,6 +9,7 @@ run_config:
 preprocess_data:
   input_file: 'data/train_data.csv'
   output_file: 'data/cleaned_train_data.csv'
+  test_file: 'data/test_data.csv'
 
   numeric_features:
     - 'age'
@@ -33,17 +34,13 @@ train_model:
   output_model: 'models/'
   model_filename: 'random_forest_model.pkl'
 
-score_model:
-  initial_features:
-    - 'log_entropy'
-    - 'IR_norm_range'
-    - 'entropy_x_contrast'
-
 evaluate_performance:
-  - 'AUC'
-  - 'Accuracy'
-  - 'Confusion Matrix' 
-  - 'Classification Report'
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - roc_auc
 
 aws:
   upload: True

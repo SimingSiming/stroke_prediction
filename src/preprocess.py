@@ -44,8 +44,3 @@ def preprocess_data(df, numeric_features, cat_features, drop_features, target_fe
     cleaned_data = pd.concat([X_resampled_df, y_resampled.reset_index(drop=True)], axis=1)
 
     return cleaned_data
-
-def load_config(config_path):
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
-    return config
