@@ -16,4 +16,4 @@ COPY config/ ./config/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Undergo pytest 
-CMD ["pytest","test_modules.py"]
+CMD ["pytest","unit_tests.py"]
