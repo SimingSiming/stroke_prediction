@@ -30,3 +30,23 @@ aws:
   profile_name: mlds_ce
   bucket_name: cloud-engineer-bucket
   region_name: us-east-2
+
+logging:
+  version: 1
+  disable_existing_loggers: False
+  formatters:
+    simple:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: simple
+      level: DEBUG
+    file:
+      class: logging.FileHandler
+      formatter: simple
+      level: DEBUG
+      filename: 'pipeline/logs/application.log'
+  root:
+    handlers: [console, file]
+    level: DEBUG
