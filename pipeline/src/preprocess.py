@@ -1,30 +1,14 @@
-"""
-This module provides functions for preprocessing data.
-
-"""
-
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
+import yaml
+import boto3
+from io import StringIO
 
 def preprocess_data(df, numeric_features, cat_features, drop_features, target_feature):
-    """
-    Preprocess the input DataFrame.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the data to be preprocessed.
-        numeric_features (list): List of column names corresponding to numerical features.
-        cat_features (list): List of column names corresponding to categorical features.
-        drop_features (list): List of column names to be dropped.
-        target_feature (str): The name of the target variable.
-
-    Returns:
-        DataFrame: The preprocessed DataFrame.
-
-    """
     # Define transformers
     numerical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='mean')),

@@ -1,8 +1,3 @@
-"""
-This module provides functions for evaluating model performance and generating evaluation metrics.
-
-"""
-
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -22,14 +17,9 @@ import matplotlib.pyplot as plt
 def predict_model(model, X_test):
     """
     Make predictions using the trained model.
-    
-    Args:
-        model: Trained model.
-        X_test: Test features.
-
-    Returns:
-        tuple: Predicted labels and probabilities.
-
+    :param model: Trained model
+    :param X_test: Test features
+    :return: Predicted labels and probabilities
     """
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1]
@@ -38,16 +28,11 @@ def predict_model(model, X_test):
 def evaluate_performance(y_test, y_pred, y_proba, metrics_to_evaluate):
     """
     Evaluate the model performance using various metrics.
-    
-    Args:
-        y_test: True labels.
-        y_pred: Predicted labels.
-        y_proba: Predicted probabilities.
-        metrics_to_evaluate: List of metrics to evaluate.
-
-    Returns:
-        dict: Dictionary of calculated metrics.
-
+    :param y_test: True labels
+    :param y_pred: Predicted labels
+    :param y_proba: Predicted probabilities
+    :param metrics_to_evaluate: List of metrics to evaluate
+    :return: Dictionary of calculated metrics
     """
     metrics = {}
     if 'roc_auc' in metrics_to_evaluate:
@@ -69,12 +54,9 @@ def evaluate_performance(y_test, y_pred, y_proba, metrics_to_evaluate):
 def plot_roc_auc(y_test, y_proba, output_path):
     """
     Plot and save AUC-ROC curve.
-    
-    Args:
-        y_test: True labels.
-        y_proba: Predicted probabilities.
-        output_path: Path to save the plot.
-
+    :param y_test: True labels
+    :param y_proba: Predicted probabilities
+    :param output_path: Path to save the plot
     """
     fpr, tpr, _ = roc_curve(y_test, y_proba)
     roc_auc = auc(fpr, tpr)
@@ -88,3 +70,13 @@ def plot_roc_auc(y_test, y_proba, output_path):
     plt.title('Receiver Operating Characteristic')
     plt.legend(loc="lower right")
     plt.savefig(output_path)
+
+
+
+
+
+
+
+
+
+
