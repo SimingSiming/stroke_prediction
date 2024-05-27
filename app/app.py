@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 
 # Define the FastAPI endpoint
-FASTAPI_URL = "http://127.0.0.1:8000/predict"   # Update this to your actual FastAPI endpoint
+FASTAPI_URL = "http://0.0.0.0:8000/predict"   # Update this to your actual FastAPI endpoint
 
 # Streamlit app title
 st.title("Heart Stroke Prediction")

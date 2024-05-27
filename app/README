@@ -1,0 +1,2 @@
+docker build -t myapp .
+docker run -d -p 8000:8000 -p 8501:8501 -v ~/.aws:/root/.aws:ro myapp
