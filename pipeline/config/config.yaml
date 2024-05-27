@@ -29,10 +29,23 @@ preprocess_data:
 train_model:
   random_state: 1911
   test_size: 0.3
-  n_estimators: 10
-  max_depth: 10
   output_model: 'models/'
-  model_filename: 'random_forest_model.pkl'
+
+  random_forest:
+    n_estimators: 10
+    max_depth: 10
+    model_filename: 'random_forest_model.pkl'
+
+  logistic_regression:
+    C: 1
+    max_iter: 100
+    model_filename: 'lr_model.pkl'
+  
+  XGB_model:
+    n_estimators: 10
+    max_depth: 10
+    learning_rate: 0.1
+    model_filename: 'xgb_model.pkl'
 
 evaluate_performance:
   metrics:

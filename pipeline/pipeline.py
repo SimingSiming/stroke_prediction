@@ -9,6 +9,7 @@ import src.train as t
 import src.aws_utils as aws
 import src.evaluate as e 
 import json
+import os
 
 logging.config.fileConfig("config/logging/local.conf")
 logger = logging.getLogger("heart_stroke")
@@ -72,11 +73,13 @@ if __name__ == "__main__":
     df = aws.load_data_from_s3(bucket_name, data_path, region_name, profile_name)
 
     X_train, X_test, y_train, y_test = t.split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
-    model = t.train_model(X_train, y_train, train_config['n_estimators'], train_config['random_state'], train_config['max_depth'])
+    
+    model_selection = os.getenv('MODEL_SELECTION', 'random_forest')
+    model = t.train_model(X_train, y_train, train_config, model_selection)
 
     # Model Configuration
     model_output_path = train_config['output_model']
-    model_filename = train_config['model_filename']
+    model_filename = train_config[model_selection]['model_filename']
     s3_path = model_output_path  
 
     # Save and upload the model
