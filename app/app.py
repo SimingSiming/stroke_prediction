@@ -8,6 +8,10 @@ FASTAPI_URL = "http://127.0.0.1:8000/predict"   # Update this to your actual Fas
 # Streamlit app title
 st.title("Heart Stroke Prediction")
 
+# Section for selecting model type
+st.sidebar.header("Select Model Type")
+model_type = st.sidebar.selectbox("Model Type", options=["Random Forest", "Logistic Regression", "XGBoost"])
+
 # Create form for input
 with st.form("patient_form"):
     st.header("Enter Patient Information")
@@ -26,6 +30,13 @@ with st.form("patient_form"):
     # Form submission button
     submit = st.form_submit_button("Predict")
 
+# Map user-friendly model names to model file names
+model_mapping = {
+    "Random Forest": "random_forest_model",
+    "Logistic Regression": "lr_model",
+    "XGBoost": "xgb_model"
+}
+
 # Process form submission
 if submit:
     # Create a dictionary from the form data
@@ -40,7 +51,8 @@ if submit:
         "Residence_type": Residence_type,
         "avg_glucose_level": avg_glucose_level,
         "bmi": bmi,
-        "smoking_status": smoking_status
+        "smoking_status": smoking_status,
+        "model_type": model_mapping[model_type]
     }
 
     # Send the data to the FastAPI endpoint and get the prediction

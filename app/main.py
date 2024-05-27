@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import boto3
@@ -16,8 +16,12 @@ def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
     model = joblib.load(BytesIO(obj['Body'].read()))
     return model
 
-# Load the model
-model = load_model_from_s3('cloud-engineer-bucket', 'models/random_forest_model.pkl')
+# Load the models
+models = {
+    "random_forest_model": load_model_from_s3('cloud-engineer-bucket', 'models/random_forest_model.pkl'),
+    "lr_model": load_model_from_s3('cloud-engineer-bucket', 'models/lr_model.pkl'),
+    "xgb_model": load_model_from_s3('cloud-engineer-bucket', 'models/xgb_model.pkl'),
+}
 
 class PatientInfo(BaseModel):
     id: int
@@ -31,9 +35,15 @@ class PatientInfo(BaseModel):
     avg_glucose_level: float
     bmi: float
     smoking_status: str
+    model_type: str
 
 @app.post("/predict")
 def predict(patient: PatientInfo):
+    if patient.model_type not in models:
+        raise HTTPException(status_code=404, detail="Model not found")
+    
+    model = models[patient.model_type]
+
     # Create a DataFrame from the input data
     data = {
         'id': [patient.id],
@@ -52,6 +62,7 @@ def predict(patient: PatientInfo):
     numeric_features = ['age', 'avg_glucose_level','bmi']
     cat_features = ['gender', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
     drop_features =['id','heart_disease']
+
     # Apply the preprocessing function
     X_transformed_df = pp.preprocess_data(df, numeric_features, cat_features, drop_features)
 
