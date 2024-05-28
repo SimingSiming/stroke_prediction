@@ -1,2 +1,2 @@
-docker build -t myapp .
-docker run -d -p 8000:8000 -p 8501:8501 -v ~/.aws:/root/.aws:ro myapp
+docker build -t heart-webapp .
+docker run -d -p 8500:8500 -v ~/.aws:/root/.aws -e AWS_PROFILE=mlds_ce heart-webapp
