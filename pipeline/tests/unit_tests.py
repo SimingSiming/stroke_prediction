@@ -9,6 +9,47 @@ import src.evaluate as e
 import src.preprocess as pre
 import src.train as t
 
+import unittest
+
+import boto3
+from moto import mock_s3
+import os
+import pickle
+
+# Assume the function is imported from your module
+# from your_module import save_and_upload_model
+
+class TestSaveAndUploadModel(unittest.TestCase):
+    
+    @mock_s3
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("os.makedirs")
+    def test_save_and_upload_model(self, mock_makedirs, mock_file):
+        # Mock S3 and create bucket
+        s3 = boto3.client('s3', region_name='us-east-1')
+        bucket_name = "test-bucket"
+        s3.create_bucket(Bucket=bucket_name)
+
+        model = {"key": "value"}
+        output_path = "output"
+        s3_path = "models"
+        model_filename = "model.pkl"
+        
+        # Call the function
+        save_and_upload_model(model, output_path, bucket_name, s3_path, model_filename)
+        
+        # Assertions
+        mock_makedirs.assert_called_once_with(output_path, exist_ok=True)
+        mock_file.assert_called_with(os.path.join(output_path, model_filename), 'wb')
+        mock_file().write.assert_called_once()
+        
+        # Check if the model was uploaded to S3
+        response = s3.list_objects_v2(Bucket=bucket_name)
+        self.assertEqual(response['KeyCount'], 1)
+        self.assertEqual(response['Contents'][0]['Key'], f"{s3_path}/{model_filename}")
+    
+if __name__ == '__main__':
+    unittest.main()
 
 def test_predict_model():
     """Test predict_model function"""
