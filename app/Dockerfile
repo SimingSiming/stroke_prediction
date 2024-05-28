@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-## create logs
+# Create logs directory
 RUN mkdir -p /app/logs
 
 # Install any needed packages specified in requirements.txt
@@ -19,8 +19,12 @@ RUN apt-get update && apt-get install -y supervisor && apt-get clean
 # Copy the supervisord configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose the necessary ports
-EXPOSE 8000 8501
+# Expose the necessary port
+EXPOSE 8501
+
+# Copy the entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Command to run supervisord
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
