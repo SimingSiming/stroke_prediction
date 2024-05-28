@@ -10,7 +10,7 @@ app = FastAPI()
 
 # Load model from S3
 def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
-    session = boto3.Session(profile_name='mlds_ce', region_name=region_name)
+    session = boto3.Session(region_name=region_name)
     s3 = session.client('s3', region_name=region_name)
     obj = s3.get_object(Bucket=bucket_name, Key=model_key)
     model = joblib.load(BytesIO(obj['Body'].read()))

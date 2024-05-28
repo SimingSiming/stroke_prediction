@@ -21,8 +21,8 @@ def save_and_upload_model(model, output_path, bucket_name, s3_path, model_filena
     s3.upload_file(model_file, bucket_name, os.path.join(s3_path, model_filename))
     print(f"Model uploaded to s3://{bucket_name}/{os.path.join(s3_path, model_filename)}")
     
-def load_data_from_s3(bucket_name, file_key, region_name, profile_name):
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+def load_data_from_s3(bucket_name, file_key, region_name):
+    session = boto3.Session(region_name=region_name)
     s3_client = session.client('s3')
     csv_obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
     body = csv_obj['Body'].read().decode('utf-8')
@@ -30,20 +30,16 @@ def load_data_from_s3(bucket_name, file_key, region_name, profile_name):
     return df
 
 
-def save_data_to_s3(df, bucket_name, file_key, region_name, profile_name):
+def save_data_to_s3(df, bucket_name, file_key, region_name):
     csv_buffer = StringIO()
     df.to_csv(csv_buffer, index=False)
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+    session = boto3.Session(region_name=region_name)
     s3_client = session.client('s3')
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
 
-def load_model_from_s3(bucket_name, model_key, region_name='us-east-2', profile_name=None):
-    print(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")
-    
-    if profile_name:
-        session = boto3.Session(profile_name=profile_name, region_name=region_name)
-    else:
-        session = boto3.Session(region_name=region_name)
+def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
+    print(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")   
+    session = boto3.Session(region_name=region_name)
 
     s3 = session.client('s3')
     
@@ -57,16 +53,15 @@ def load_model_from_s3(bucket_name, model_key, region_name='us-east-2', profile_
         print(f"Error loading model from S3: {e}")
         raise e
 
-def upload_artifacts_to_s3(directory, bucket_name, s3_prefix, region_name, profile_name):
+def upload_artifacts_to_s3(directory, bucket_name, s3_prefix, region_name):
     """
     Upload all files in a directory to an S3 bucket.
     :param directory: Path to the local directory containing the artifacts
     :param bucket_name: S3 bucket name
     :param s3_prefix: S3 prefix (directory) to upload the artifacts to
     :param region_name: AWS region name
-    :param profile_name: AWS profile name
     """
-    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+    session = boto3.Session(region_name=region_name)
     s3 = session.client('s3')
     for root, dirs, files in os.walk(directory):
         for file in files:

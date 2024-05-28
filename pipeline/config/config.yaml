@@ -57,6 +57,6 @@ evaluate_performance:
 
 aws:
   upload: True
-  profile_name: mlds_ce
+  # profile_name: mlds_ce
   bucket_name: cloud-engineer-bucket
   region_name: us-east-2

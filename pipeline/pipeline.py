@@ -55,13 +55,13 @@ if __name__ == "__main__":
     bucket_name = aws_config['bucket_name']
     region_name = aws_config['region_name']
     upload_to_s3 = aws_config['upload']
-    profile_name = aws_config.get('profile_name', 'default')
+    # profile_name = aws_config.get('profile_name', 'default')
 
-    df = aws.load_data_from_s3(bucket_name, input_file_key, region_name, profile_name)
+    df = aws.load_data_from_s3(bucket_name, input_file_key, region_name)
     cleaned_data = pp.preprocess_data(df, numeric_features, cat_features, drop_features, target_feature)
 
     if upload_to_s3:
-        aws.save_data_to_s3(cleaned_data, bucket_name, output_file_key, region_name, profile_name)
+        aws.save_data_to_s3(cleaned_data, bucket_name, output_file_key, region_name)
         logger.info(f"File successfully uploaded to S3!! {output_file_key}")
     else:
         cleaned_data.to_csv(output_file_key, index=False)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     train_config = config['train_model']
     data_path = config['preprocess_data']['output_file']
 
-    df = aws.load_data_from_s3(bucket_name, data_path, region_name, profile_name)
+    df = aws.load_data_from_s3(bucket_name, data_path, region_name)
 
     X_train, X_test, y_train, y_test = t.split_data(df, target_feature, train_config['test_size'], train_config['random_state'])
     
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     model_key = f"{model_output_path}{model_filename}"
     # Load the model from S3
-    model = aws.load_model_from_s3(bucket_name, model_key, region_name, profile_name)
+    model = aws.load_model_from_s3(bucket_name, model_key, region_name)
     # Now you can use the loaded model for prediction or further processing
     print("Model loaded successfully!")
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     # Optionally upload artifacts to S3
     if upload_to_s3:
-        aws.upload_artifacts_to_s3(artifacts, bucket_name, f"runs/{now}", region_name, profile_name)
+        aws.upload_artifacts_to_s3(artifacts, bucket_name, f"runs/{now}", region_name)
         logger.info(f"Artifacts successfully uploaded to S3!!")
 
 
