@@ -3,18 +3,16 @@ from pathlib import Path
 import pytest
 import pandas as pd
 import numpy as np
+import sys
+import os
 
+# Add the src directory to the Python path
+src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(src_path)
 # Mock some external imports that we will use
 import src.evaluate as e
 import src.preprocess as pre
 import src.train as t
-
-import unittest
-
-import boto3
-from moto import mock_s3
-import os
-import pickle
 
 # Assume the function is imported from your module
 # from your_module import save_and_upload_model
