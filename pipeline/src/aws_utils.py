@@ -19,7 +19,7 @@ def save_and_upload_model(model, output_path, bucket_name, s3_path, model_filena
     # Upload the model to S3
     s3 = boto3.client('s3')
     s3.upload_file(model_file, bucket_name, os.path.join(s3_path, model_filename))
-    print(f"Model uploaded to s3://{bucket_name}/{os.path.join(s3_path, model_filename)}")
+    logger.info(f"Model uploaded to s3://{bucket_name}/{os.path.join(s3_path, model_filename)}")
     
 def load_data_from_s3(bucket_name, file_key, region_name):
     session = boto3.Session(region_name=region_name)
@@ -38,7 +38,7 @@ def save_data_to_s3(df, bucket_name, file_key, region_name):
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
 
 def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
-    print(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")   
+    logger.info(f"Loading model from S3 bucket: {bucket_name}, key: {model_key}")   
     session = boto3.Session(region_name=region_name)
 
     s3 = session.client('s3')
@@ -50,7 +50,7 @@ def load_model_from_s3(bucket_name, model_key, region_name='us-east-2'):
             model = pickle.load(data)
         return model
     except Exception as e:
-        print(f"Error loading model from S3: {e}")
+        logger.error(f"Error loading model from S3: {e}")
         raise e
 
 def upload_artifacts_to_s3(directory, bucket_name, s3_prefix, region_name):
@@ -69,7 +69,7 @@ def upload_artifacts_to_s3(directory, bucket_name, s3_prefix, region_name):
             relative_path = os.path.relpath(local_path, directory)
             s3_path = os.path.join(s3_prefix, relative_path)
             s3.upload_file(local_path, bucket_name, s3_path)
-            print(f"Uploaded {local_path} to s3://{bucket_name}/{s3_path}")
+            logger.info(f"Uploaded {local_path} to s3://{bucket_name}/{s3_path}")
 
 
 

@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # Load the model from S3
     model = aws.load_model_from_s3(bucket_name, model_key, region_name)
     # Now you can use the loaded model for prediction or further processing
-    print("Model loaded successfully!")
+    logger.info("Model loaded successfully!")
 
     # Evaluate the Model
     evaluate_config = config['evaluate_performance']['metrics']
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     roc_auc_path = artifacts / "roc_auc_curve.png"
     e.plot_roc_auc(y_test, y_proba, roc_auc_path)
 
-    print(f"Metrics and ROC-AUC curve saved in {artifacts}")
+    logger.info(f"Metrics and ROC-AUC curve saved in {artifacts}")
 
     # Optionally upload artifacts to S3
     if upload_to_s3:
