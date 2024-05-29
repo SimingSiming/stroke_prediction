@@ -14,7 +14,7 @@ To provide flexibility and allow different users to specify their own configurat
 
    ```env
 MODEL_SELECTION=random_forest
-   ```
+``
 
 ## Installation and Prerequisites
 Ensure you have Docker installed on your system. You can download and install Docker from [here](https://www.docker.com/get-started/).
