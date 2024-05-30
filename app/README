@@ -1,17 +1,44 @@
+# Cloud Classification App
+## Project Summary
 
+This project aims to deploy a machine learning pipeline for predicting heart stroke in individuals using a Streamlit-based web application that leverages FAST-API to communicate to S3. The application pulls two pre-trained models from an S3 bucket and can be run locally using Docker. The objective is to provide a robust, production-ready application that ensures reproducibility across different environments.
 
-Build the Heart Webapp Image:
+## Installation and Prerequisites
+Ensure you have Docker installed on your system. You can download and install Docker from [here](https://www.docker.com/get-started/).
+AWS CLI configured with appropriate access to your S3 bucket.
+
+## Docker Instructions
+
+To run the Docker container and execute the app on your local, use the following commands:
+
+## Build the Docker image
 
 ```bash
 docker build --platform linux/x86_64 -t heart-webapp .
 ```
-Build the Heart Webapp Image:
+
+## Run the entire model pipeline
+
+#### Using the default AWS credentials
 
 ```bash
 docker run -d -p 8500:8500 -v ~/.aws:/root/.aws -e AWS_PROFILE=mlds_ce heart-webapp
 ```
+## Example Usage
 
-Run the Heart Webapp Container:
-```bash
-docker run --rm ~/.aws:/root/.aws heart-webapp
-```
+When you run the pipeline, it will process the data, load the trained models from the S3 bucket, and provide a web interface for classifying clouds. You should see logs indicating the progress of each step and the location of saved artifacts.
+
+## Accessing the Web Application
+
+1. After running the Docker container, you will get an HTTP link in the terminal.
+2. Open the link in a web browser.
+   (It will look like - http://localhost:8501)
+4. Select the model from the dropdown menu.
+5. Provide input for classification.
+6. Click the "Predict" button to see the results.
+
+## Deployment on AWS
+
+The same application has been deployed to AWS using ECS Fargate. You can directly use the ECS service's ALB's DNS name to access the application.
+
+
